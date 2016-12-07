@@ -1,7 +1,9 @@
 import { EditorState } from 'draft-js';
+import replaceText from './replaceText';
 
-const changeCurrentBlockType = (editorState, type, text, blockMetadata = {}) => {
-  const currentContent = editorState.getCurrentContent();
+const changeCurrentBlockType = (editorState, type, text = '', blockMetadata = {}) => {
+  const newEditorState = replaceText(editorState, text);
+  const currentContent = newEditorState.getCurrentContent();
   const selection = editorState.getSelection();
   const key = selection.getStartKey();
   const blockMap = currentContent.getBlockMap();
@@ -10,7 +12,7 @@ const changeCurrentBlockType = (editorState, type, text, blockMetadata = {}) => 
   if (data && data.merge) {
     data = data.merge(blockMetadata);
   }
-  const newBlock = block.merge({ type, data, text: text || '' });
+  const newBlock = block.merge({ type, data });
   const newSelection = selection.merge({
     anchorOffset: 0,
     focusOffset: 0,
@@ -20,7 +22,7 @@ const changeCurrentBlockType = (editorState, type, text, blockMetadata = {}) => 
     selectionAfter: newSelection,
   });
   return EditorState.push(
-    editorState,
+    newEditorState,
     newContentState,
     'change-block-type'
   );
